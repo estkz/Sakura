@@ -8,7 +8,7 @@
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
-int POWER_LVL = 37; //40
+int POWER_LVL = 35; //40
 
 const int InitRead[] = {A0, A1, A2, A3, A4}; // Pins to read from the TCRT5000 sensors
 const int InitOut[] = {12, 13, /*Direction A and B*/ 3, 11};// PWM A and B
@@ -18,13 +18,14 @@ const unsigned long pingInterval = 300; // Interval between pings in millisecond
 
 static unsigned long pingTime = 0; // Time of the last ping
 unsigned long currentMillis; // Time in milliseconds
+unsigned long startTime = 0;
 int SensorOut; // Variable to store the result of the TCRT5000 sensor
+bool detectEnd = true; // Variable to store the result of the ultrasonic sensor
 
 void RoadLogic(int SensorOut); // Function prototype
-void toggleScan();
+bool DetectEnd(); // Function prototype
 
 int intersectionType = 0; // Variable to store the type of intersection
-
 
 void setup() {
   TCCR2B = TCCR2B & B11111000 | B00000111; // For PWM frequency of 30.64 Hz
@@ -40,20 +41,27 @@ void setup() {
 }
 
 void loop() {
-currentMillis = millis(); // Get the current time
-if (currentMillis > 11/*000*/) {
-    if (currentMillis - pingTime >= pingInterval) { // Check if it's time for another ping
-      pingTime = currentMillis; // Save the time of this ping
-      if (ReadSonic(sonar)) { // Check if the ultrasonic sensor is triggered
-        Turn_180(POWER_LVL);
-      }}    
-    if (wait(-1, 0, 0) == false && isScanning() == false) {
-    SensorOut = ReadTCRT(); // Read the TCRT5000 sensors
-    RoadLogic(SensorOut); // Use the result of the TCRT5000 sensors to determine the next action
+if (detectEnd == true) {
+  currentMillis = millis(); // Get the current time
+  if (currentMillis > 11/*000*/) {
+      if (currentMillis - pingTime >= pingInterval) { // Check if it's time for another ping
+        pingTime = currentMillis; // Save the time of this ping
+        if (ReadSonic(sonar)) { // Check if the ultrasonic sensor is triggered
+          Turn_180(POWER_LVL);
+        }}
+      SensorOut = ReadTCRT(); // Read the TCRT5000 sensor 
+      if (wait(-1) == false && isScanning() == false) {
+      RoadLogic(SensorOut); // Use the result of the TCRT5000 sensors to determine the next action
+      }
+    } else {
+      CountDown(currentMillis);
     }
+    detectEnd = DetectEnd();
   } else {
-    CountDown(currentMillis);
+    Stop();
+    Print('-','-');
   }
+  
 }
 
 void RoadLogic(int SensorOut){
@@ -67,13 +75,18 @@ void RoadLogic(int SensorOut){
   case 23: case 15:
     Left(POWER_LVL);
     break;  
-  case 7: case 3: case 1:     // Intersection to the left (2 or 5)
+  case 7: case 3: case 1:
     Left_90(POWER_LVL);
     break;
-  case 0: case 28: case 24: case 16:    // Intersection to the right (1, 3, 4 or 6)
+  case 0:     // Intersection to the left (2 or 5)
+    // Forward(POWER_LVL);
+    // wait(300);
+    Turn_left(POWER_LVL);
+  case 28: case 24: case 16:    // Intersection to the right (1, 3, 4 or 6)
+    Forward(POWER_LVL);
     break;
   case 31:
-    wait(50, '-', '-');
+    wait(50);
     Turn(POWER_LVL); // Turn right
     break;
   default:
@@ -81,4 +94,19 @@ void RoadLogic(int SensorOut){
 }
 }
 
+// wait before turning
+// 16, 17, 0 of 1
+
+bool DetectEnd(){
+  if (ReadTCRT() == 0 || ReadTCRT() == 1 || ReadTCRT() == 16 && startTime != 0) {
+    if (millis() - startTime >= 300) {
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    startTime = millis();
+    return true;
+  }
+}
 

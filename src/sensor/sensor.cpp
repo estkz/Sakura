@@ -20,8 +20,6 @@ int ReadTCRT(){
     return tcrtResult;
   }
 
-
-
 bool ReadSonic(NewPing sonar){
   int distance = sonar.ping_cm(); // Send ping, get distance in cm and store result (0 = outside set distance range)
   if (distance < 10 && distance > 0) {
