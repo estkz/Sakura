@@ -19,7 +19,8 @@ void Print(char displayA, char displayB) {
   if (displayTimer < millis()) {
     displayTimer += 3;
     currentDisplay = !currentDisplay;
-    if (display == 0 || display == 2 || display == 3 || display == 5 || display == 6 || display == 7 || display == 8 || display == 9 || display == 's' || display == 'e' || display == 'r') {
+    // check if segment should be on or off based on the number/letter to display
+    if (display == 0 || display == 2 || display == 3 || display == 5 || display == 6 || display == 7 || display == 8 || display == 9 || display == 's' || display == 'e' || display == 'r' || display == 'f') {
       digitalWrite(0, HIGH);  // a
     } else {
       digitalWrite(0, LOW);  // a
@@ -43,19 +44,19 @@ void Print(char displayA, char displayB) {
       digitalWrite(6, LOW);  // d
     }
 
-    if (display == 0 || display == 2 || display == 6 || display == 8 || display == 't' || display == 'u' || display == 'l' || display == 'r' || display == 'e' || display == 'c' ) {
+    if (display == 0 || display == 2 || display == 6 || display == 8 || display == 't' || display == 'u' || display == 'l' || display == 'r' || display == 'e' || display == 'c' || display == 'f' ) {
       digitalWrite(7, HIGH);  // e
     } else {
       digitalWrite(7, LOW);  // e
     }
 
-    if (display == 0 || display == 4 || display == 5 || display == 6 || display == 8 || display == 9 || display == 's' || display == 't' || display == 'l' || display == 'e' || display == 'r') {
+    if (display == 0 || display == 4 || display == 5 || display == 6 || display == 8 || display == 9 || display == 's' || display == 't' || display == 'l' || display == 'e' || display == 'r' || display == 'f') {
       digitalWrite(8, HIGH);  // f
     } else {
       digitalWrite(8, LOW);  // f
     }
 
-    if (display == 2 || display == 3 || display == 4 || display == 5 || display == 6 || display == 8 || display == 9 || displayB == '-' || display == 's' || display == 't' || display == 'e' || display == 'r' || display == 'c'  ) {
+    if (display == 2 || display == 3 || display == 4 || display == 5 || display == 6 || display == 8 || display == 9 || displayB == '-' || display == 's' || display == 't' || display == 'e' || display == 'r' || display == 'c' || display == 'f'  ) {
       digitalWrite(A5, HIGH);  // g
     } else {
       digitalWrite(A5, LOW);  // g
@@ -71,6 +72,7 @@ void Print(char displayA, char displayB) {
   }}
 
   void CountDown(unsigned long currentMillis) {
+    // 10 seconds countdown at start of loop
   int sec = currentMillis / 1000;
   sec = 10 - sec;
   if (sec <= 0) {
@@ -78,4 +80,14 @@ void Print(char displayA, char displayB) {
   } else {
     Print(sec / 10, sec % 10);
   }
+}
+
+  void CountUp(unsigned long currentMillis) {
+    //while the robot is driving count up
+  int sec = currentMillis / 1000 - 11;
+  if (sec < 99) {
+    Print(sec / 10, sec % 10);
+  } else {
+    Print(sec / 60, sec / 10);
+    }
 }

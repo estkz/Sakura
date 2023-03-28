@@ -16,7 +16,6 @@ int ReadTCRT(){
       tcrtResult += 1;
     }
     }
-    Print(tcrtResult/10, tcrtResult%10);
     return tcrtResult;
   }
 

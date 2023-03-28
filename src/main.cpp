@@ -8,7 +8,7 @@
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
-int POWER_LVL = 35; //40
+int POWER_LVL = 45; //35
 
 const int InitRead[] = {A0, A1, A2, A3, A4}; // Pins to read from the TCRT5000 sensors
 const int InitOut[] = {12, 13, /*Direction A and B*/ 3, 11};// PWM A and B
@@ -18,12 +18,14 @@ const unsigned long pingInterval = 300; // Interval between pings in millisecond
 
 static unsigned long pingTime = 0; // Time of the last ping
 unsigned long currentMillis; // Time in milliseconds
+unsigned long finaltime;
 unsigned long startTime = 0;
 int SensorOut; // Variable to store the result of the TCRT5000 sensor
 bool detectEnd = true; // Variable to store the result of the ultrasonic sensor
 
 void RoadLogic(int SensorOut); // Function prototype
 bool DetectEnd(); // Function prototype
+void checkIntersection(int POWER_LVL); // Function prototype
 
 int intersectionType = 0; // Variable to store the type of intersection
 
@@ -43,46 +45,56 @@ void setup() {
 void loop() {
 if (detectEnd == true) {
   currentMillis = millis(); // Get the current time
-  if (currentMillis > 11/*000*/) {
+  
+  if (currentMillis > 11000) {
       if (currentMillis - pingTime >= pingInterval) { // Check if it's time for another ping
         pingTime = currentMillis; // Save the time of this ping
         if (ReadSonic(sonar)) { // Check if the ultrasonic sensor is triggered
           Turn_180(POWER_LVL);
         }}
       SensorOut = ReadTCRT(); // Read the TCRT5000 sensor 
-      if (wait(-1) == false && isScanning() == false) {
+      if (wait(-1) == false) {
       RoadLogic(SensorOut); // Use the result of the TCRT5000 sensors to determine the next action
       }
+      detectEnd = DetectEnd();
+      CountUp(currentMillis);
     } else {
       CountDown(currentMillis);
     }
-    detectEnd = DetectEnd();
   } else {
-    Stop();
-    Print('-','-');
-  }
-  
+    Stop();  //end sequence that plays when the car reaches the end (3x blinking + finish)
+    if ((millis() - finaltime >= 1000 && millis() - finaltime < 2000) || (millis() - finaltime >= 3000 && millis() - finaltime  < 4000)|| (millis() - finaltime >= 5000 && millis() - finaltime  < 6000) || (millis() - finaltime >= 5000 && millis() - finaltime  < 6000)) {
+      CountUp(finaltime);
+    } else if (millis() - finaltime >= 7000) {
+      Print('f','i');
+    } else {
+      Print(' ',' ');
+    }
+  } 
 }
 
+//the logic that determines the next action based on the TCRT5000 sensor output
 void RoadLogic(int SensorOut){
   switch (SensorOut) {
   case 27: case 25: case 19:
     Forward(POWER_LVL);
     break;    
-  case 30: case 29:
+  case 30:
+  CriticalOffRight(POWER_LVL); // Critical Off Right
+    break;
+  case 29:
     Right(POWER_LVL);
     break;
-  case 23: case 15:
+  case 15:
+  CriticalOffLeft(POWER_LVL);  // Critical Off Left
+    break; 
+  case 23:
     Left(POWER_LVL);
     break;  
-  case 7: case 3: case 1:
+  case 7: case 3: case 1: case 0:
     Left_90(POWER_LVL);
     break;
-  case 0:     // Intersection to the left (2 or 5)
-    // Forward(POWER_LVL);
-    // wait(300);
-    Turn_left(POWER_LVL);
-  case 28: case 24: case 16:    // Intersection to the right (1, 3, 4 or 6)
+  case 28: case 24: case 16:   
     Forward(POWER_LVL);
     break;
   case 31:
@@ -94,12 +106,13 @@ void RoadLogic(int SensorOut){
 }
 }
 
-// wait before turning
-// 16, 17, 0 of 1
 
 bool DetectEnd(){
-  if (ReadTCRT() == 0 || ReadTCRT() == 1 || ReadTCRT() == 16 && startTime != 0) {
-    if (millis() - startTime >= 300) {
+  //if one of tree end scenarios is detected, the car stops and the end sequence starts
+  if (SensorOut == 0 || SensorOut == 16 || SensorOut == 24 && startTime != 0) {
+    if (millis() - startTime >= 500) {
+      finaltime = millis();
+      Stop();
       return false;
     } else {
       return true;

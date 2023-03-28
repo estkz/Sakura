@@ -10,6 +10,9 @@ void Turn(int POWER_LVL); // Function for rotating
 void Turn_180(int POWER_LVL); // Function for rotating 180*
 void Left_90(int POWER_LVL); // Function for turning left
 void Right_90(int POWER_LVL); // Function for turning right
+void CriticalOffLeft(int POWER_LVL);
+void CriticalOffRight(int POWER_LVL);
+
 
 bool wait(int delayTime); // Function prototype
 bool isScanning(); // Function prototype
