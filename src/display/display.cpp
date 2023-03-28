@@ -19,7 +19,7 @@ void Print(char displayA, char displayB) {
   if (displayTimer < millis()) {
     displayTimer += 3;
     currentDisplay = !currentDisplay;
-    // check if segment should be on or off based on the number/letter to display
+    // Check if segment should be on or off based on the number/letter to display
     if (display == 0 || display == 2 || display == 3 || display == 5 || display == 6 || display == 7 || display == 8 || display == 9 || display == 's' || display == 'e' || display == 'r' || display == 'f') {
       digitalWrite(0, HIGH);  // a
     } else {
@@ -83,7 +83,7 @@ void Print(char displayA, char displayB) {
 }
 
   void CountUp(unsigned long currentMillis) {
-    //while the robot is driving count up
+    // While the robot is driving count up
   int sec = currentMillis / 1000 - 11;
   if (sec < 99) {
     Print(sec / 10, sec % 10);

@@ -62,7 +62,7 @@ if (detectEnd == true) {
       CountDown(currentMillis);
     }
   } else {
-    Stop();  //end sequence that plays when the car reaches the end (3x blinking + finish)
+    Stop();  // End sequence that plays when the car reaches the end (3x blinking + finish)
     if ((millis() - finaltime >= 1000 && millis() - finaltime < 2000) || (millis() - finaltime >= 3000 && millis() - finaltime  < 4000)|| (millis() - finaltime >= 5000 && millis() - finaltime  < 6000) || (millis() - finaltime >= 5000 && millis() - finaltime  < 6000)) {
       CountUp(finaltime);
     } else if (millis() - finaltime >= 7000) {
@@ -73,7 +73,7 @@ if (detectEnd == true) {
   } 
 }
 
-//the logic that determines the next action based on the TCRT5000 sensor output
+// The logic that determines the next action based on the TCRT5000 sensor output
 void RoadLogic(int SensorOut){
   switch (SensorOut) {
   case 27: case 25: case 19:
@@ -108,7 +108,7 @@ void RoadLogic(int SensorOut){
 
 
 bool DetectEnd(){
-  //if one of tree end scenarios is detected, the car stops and the end sequence starts
+  // If one of tree end scenarios is detected, the car stops and the end sequence starts
   if (SensorOut == 0 || SensorOut == 16 || SensorOut == 24 && startTime != 0) {
     if (millis() - startTime >= 500) {
       finaltime = millis();
